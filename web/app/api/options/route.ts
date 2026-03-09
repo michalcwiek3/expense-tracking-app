@@ -1,0 +1,35 @@
+import { NextResponse } from "next/server";
+import { Pool } from "pg";
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+export async function GET() {
+  try {
+    const [cats, subcats, pay, circ, src] = await Promise.all([
+      pool.query(`select name from categories order by name`),
+      pool.query(`
+        select category_name, array_agg(name order by name) as subcategories
+        from subcategories
+        group by category_name
+        order by category_name
+      `),
+      pool.query(`select name from payment_types order by name`),
+      pool.query(`select name from circumstances order by name`),
+      pool.query(`select name from money_sources order by name`),
+    ]);
+
+    const subcategoriesByCategory: Record<string, string[]> = {};
+    for (const r of subcats.rows) subcategoriesByCategory[r.category_name] = r.subcategories ?? [];
+
+    return NextResponse.json({
+      categories: cats.rows.map((r) => r.name),
+      subcategoriesByCategory,
+      paymentTypes: pay.rows.map((r) => r.name),
+      circumstances: circ.rows.map((r) => r.name),
+      moneySources: src.rows.map((r) => r.name),
+    });
+  } catch (err) {
+    console.error("GET /api/options failed:", err);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
+  }
+}
