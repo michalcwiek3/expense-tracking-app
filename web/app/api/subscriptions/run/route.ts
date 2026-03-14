@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Pool } from "pg";
-import { auth } from "@/auth";
+
+export const dynamic = "force-dynamic";
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
@@ -8,14 +9,14 @@ const pool = new Pool({
 
 function isAuthorizedByCronSecret(request: Request) {
   const authHeader = request.headers.get("authorization");
-  return !!process.env.CRON_SECRET && authHeader === `Bearer ${process.env.CRON_SECRET}`;
+  return (
+    !!process.env.CRON_SECRET &&
+    authHeader === `Bearer ${process.env.CRON_SECRET}`
+  );
 }
 
-export const POST = auth(async function POST(req) {
-  const loggedIn = !!req.auth?.user?.email;
-  const cronAuthorized = isAuthorizedByCronSecret(req);
-
-  if (!loggedIn && !cronAuthorized) {
+export async function GET(req: Request) {
+  if (!isAuthorizedByCronSecret(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
@@ -89,4 +90,4 @@ export const POST = auth(async function POST(req) {
     console.error("subscription run failed", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
-});
+}
