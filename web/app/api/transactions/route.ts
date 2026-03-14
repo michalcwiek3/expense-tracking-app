@@ -1,11 +1,15 @@
 import { NextResponse } from "next/server";
 import { Pool } from "pg";
+import { auth } from "../../../auth";
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
-export async function GET() {
+export const GET = auth(async function GET(req) {
+  if (!req.auth?.user?.email) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const { rows } = await pool.query(
       `
@@ -31,9 +35,12 @@ export async function GET() {
     console.error("GET /api/transactions failed:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
-}
+});
 
-export async function POST(req: Request) {
+export const POST = auth(async function POST(req) {
+  if (!req.auth?.user?.email) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
   try {
     const body = await req.json();
 
@@ -116,4 +123,4 @@ export async function POST(req: Request) {
     console.error("POST /api/transactions failed:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
-}
+});

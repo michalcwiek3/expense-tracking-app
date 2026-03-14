@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
 import { Pool } from "pg";
+import { auth } from "../../../auth";
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+});
 
-export async function GET() {
+export const GET = auth(async function GET(req) {
+  if (!req.auth?.user?.email) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const [cats, subcats, pay, circ, src] = await Promise.all([
       pool.query(`select name from categories order by name`),
@@ -19,7 +26,9 @@ export async function GET() {
     ]);
 
     const subcategoriesByCategory: Record<string, string[]> = {};
-    for (const r of subcats.rows) subcategoriesByCategory[r.category_name] = r.subcategories ?? [];
+    for (const r of subcats.rows) {
+      subcategoriesByCategory[r.category_name] = r.subcategories ?? [];
+    }
 
     return NextResponse.json({
       categories: cats.rows.map((r) => r.name),
@@ -32,4 +41,4 @@ export async function GET() {
     console.error("GET /api/options failed:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
-}
+});
