@@ -16,6 +16,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       const email =
         typeof profile?.email === "string" ? profile.email.toLowerCase() : null;
 
+      console.log("Google profile email:", email);
+      console.log("Allowed email:", allowedEmail);
+
       return !!email && !!allowedEmail && email === allowedEmail;
     },
   },
