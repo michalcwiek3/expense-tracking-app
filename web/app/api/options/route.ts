@@ -13,16 +13,16 @@ export const GET = auth(async function GET(req) {
 
   try {
     const [cats, subcats, pay, circ, src] = await Promise.all([
-      pool.query(`select name from categories order by name`),
+      pool.query(`select name from categories order by sort_val`),
       pool.query(`
         select category_name, array_agg(name order by name) as subcategories
         from subcategories
         group by category_name
         order by category_name
       `),
-      pool.query(`select name from payment_types order by name`),
-      pool.query(`select name from circumstances order by name`),
-      pool.query(`select name from money_sources order by name`),
+      pool.query(`select name from payment_types order by sort_val`),
+      pool.query(`select name from circumstances order by sort_val`),
+      pool.query(`select name from money_sources order by sort_val`),
     ]);
 
     const subcategoriesByCategory: Record<string, string[]> = {};

@@ -30,7 +30,7 @@ function Chip({
   return (
     <button
       onClick={onClick}
-      className="px-3 py-2 rounded-full border text-sm bg-white text-black border-gray-300"
+      className="px-3 py-2 rounded-full border text-sm bg-lime-200 text-black"
       type="button"
     >
       {label}
@@ -50,7 +50,7 @@ function PrimaryButton({
   return (
     <button
       type="button"
-      className="px-4 py-3 rounded-lg bg-black text-white font-semibold disabled:opacity-60"
+      className="px-4 py-3 rounded-lg bg-orange-400 text-white font-semibold disabled:opacity-60"
       onClick={onClick}
       disabled={disabled}
     >
